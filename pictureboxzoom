@@ -1,0 +1,128 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace WindowsFormsApplication1
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            ImageModified = new Bitmap(@"C:\pix\fun.png");
+            pictureBox1.Dock = DockStyle.Fill;
+            pictureBox1.Image = (Image)ImageModified;
+        }
+
+        public bool IsLBD { get; private set; }
+        public Point RectStartPoint { get; set; }
+        public Point RectEndPoint { get; set; }
+        public Bitmap SelectedImage { get; set; }
+        public Bitmap ImageModified { get; set; }
+
+        private Rectangle Rect = new Rectangle();
+        private Brush selectionBrush = new SolidBrush(Color.FromArgb(128, 72, 145, 220));
+
+
+
+        private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
+        {
+            IsLBD = false;
+            pictureBox1.Invalidate();
+
+            RectEndPoint = e.Location;
+            //Getting the image from the selected area
+            Rectangle rectangle = new Rectangle(
+                    Math.Min(RectStartPoint.X, RectEndPoint.X),
+                    Math.Min(RectStartPoint.Y, RectEndPoint.Y),
+                    Math.Abs(RectStartPoint.X - RectEndPoint.X),
+                    Math.Abs(RectStartPoint.Y - RectEndPoint.Y));
+
+            if (rectangle.Width > 0 && rectangle.Height > 0)
+            {
+                zoomInsideRectangle(rectangle);
+
+                SelectedImage = new Bitmap(rectangle.Width, rectangle.Height);
+
+                using (Graphics gr = Graphics.FromImage(SelectedImage))
+                {
+                    gr.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                    gr.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+
+                    gr.DrawImage(ImageModified, new Rectangle(0, 0,
+                        SelectedImage.Width, SelectedImage.Height),
+                        rectangle, GraphicsUnit.Pixel);
+                    pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
+                    pictureBox1.Image = SelectedImage;
+                }
+
+                RectStartPoint = Point.Empty;
+                RectEndPoint = Point.Empty;
+                ImageModified = SelectedImage;
+            }
+        }
+        private void zoomInsideRectangle(Rectangle rect)
+        {
+            float zoomFactor = ((float)panel1.Width / rect.Width) - 1;
+
+            if (zoomFactor < 10)
+            {
+
+                pictureBox1.Width = pictureBox1.Width + Convert.ToInt32(pictureBox1.Width * zoomFactor);
+                pictureBox1.Height = pictureBox1.Height + Convert.ToInt32(pictureBox1.Height * zoomFactor);
+
+                rect.X = rect.X + Convert.ToInt32(rect.X * zoomFactor);
+                rect.Y = rect.Y + Convert.ToInt32(rect.Y * zoomFactor);
+
+                pictureBox1.Left = Convert.ToInt32(-rect.X);
+                pictureBox1.Top = Convert.ToInt32(-rect.Y);
+            }
+        }
+      
+        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
+        {
+            // Determine the initial rectangle coordinates...
+            RectStartPoint = e.Location;
+            Invalidate();
+
+        }
+
+        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Left)
+                return;
+            Point tempEndPoint = e.Location;
+            Rect.Location = new Point(
+                Math.Min(RectStartPoint.X, tempEndPoint.X),
+                Math.Min(RectStartPoint.Y, tempEndPoint.Y));
+            Rect.Size = new Size(
+                Math.Abs(RectStartPoint.X - tempEndPoint.X),
+                Math.Abs(RectStartPoint.Y - tempEndPoint.Y));
+            pictureBox1.Invalidate();
+
+        }
+
+        private void pictureBox1_Paint(object sender, PaintEventArgs e)
+        {
+            //Draw the rectangle...
+            if (pictureBox1.Image != null)
+            {
+                if (Rect != null && Rect.Width > 0 && Rect.Height > 0)
+                {
+                    e.Graphics.FillRectangle(selectionBrush, Rect);
+                }
+            }
+
+        }
+    }
+}
