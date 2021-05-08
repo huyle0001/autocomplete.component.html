@@ -1,0 +1,92 @@
+using System;
+using System.IO;
+using System.Xml;
+using System.Xml.Linq;
+using System.Xml.XPath;
+
+namespace ECMFileWatcher.Utils
+{
+    public static class XmlParse
+    {
+        public static string GetNodeValue(string pEnvironment, string pNodeName)
+        {
+            try
+            {
+                string nodeVal = string.Empty;
+                XmlDocument xmlDoc = new XmlDocument();
+                string xmlFile = XmlPath() + @"Xmlfiles\AppData.xml";
+                string nodeName = @"/ApplicationData/" + pEnvironment + @"/" + pNodeName;
+
+                xmlDoc.Load(xmlFile);
+                nodeVal = xmlDoc.DocumentElement.SelectSingleNode(nodeName).InnerText;
+
+                return nodeVal;
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        public static string GetNodeValue(string pNodeName)
+        {
+            try
+            {
+                string nodeVal = string.Empty;
+                XmlDocument xmlDoc = new XmlDocument();
+                string xmlFile = XmlPath() + @"Xmlfiles\AppData.xml";
+                string nodeName = @"/ApplicationData/IntitialValues/" + pNodeName;
+
+                xmlDoc.Load(xmlFile);
+                nodeVal = xmlDoc.DocumentElement.SelectSingleNode(nodeName).InnerText;
+
+                return nodeVal;
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        public static XElement GetElementFromXML(string xPath)
+        {
+            string xmlFile = XmlPath() + @"Xmlfiles\AppData.xml";
+
+            XDocument xDocument;
+            xDocument = XDocument.Load(xmlFile);
+            return xDocument.XPathSelectElement(xPath);
+
+        }
+        public static XElement GetElementFromXML(XElement pElement, string xPath)
+        {
+
+            return pElement.XPathSelectElement(xPath);
+
+        }
+
+        public static string GetElementValue(XElement xElement, string elementName)
+        {
+            var ele = xElement.Element(XName.Get(elementName));
+            return ele != null ? ele.Value : string.Empty;
+        }
+
+
+        public static string XmlPath()
+        {
+            string xdocPath = AppDomain.CurrentDomain.BaseDirectory;
+
+            if (xdocPath.IndexOf("Debug") > 0)
+            {
+                xdocPath = xdocPath.Replace(@"bin\x64\Debug", "");  //case 1
+                xdocPath = xdocPath.Replace(@"bin\Debug", "");       //case 2
+                xdocPath = xdocPath.Replace(@"bin\x64\Release", "");  //case 3
+                xdocPath = xdocPath.Replace(@"bin\Release", "");     //case 4
+            }
+            else
+                xdocPath += @"\";
+
+
+            return xdocPath;
+        }
+    }
+}
