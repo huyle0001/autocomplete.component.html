@@ -1,0 +1,26 @@
+ LogFile.LogWriter($" OnStart at  {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)}{Environment.NewLine}");
+
+                string timeInterval = XmlParse.GetNodeValue("TimeInterval");
+                var nestedwatcherPath = XmlParse.GetElementFromXML(@"ApplicationData/IntitialValues/WatcherPath");
+
+                if (nestedwatcherPath != null)
+                {
+                    foreach (XElement companyElement in nestedwatcherPath.Elements())
+                    {
+                        string destinationPath = XmlParse.GetElementValue(companyElement, "DestinationPath");
+                        string sourcePath = XmlParse.GetElementValue(companyElement, "SourcePath");
+
+                        if (!String.IsNullOrEmpty(destinationPath) && !String.IsNullOrEmpty(sourcePath))
+                        {
+                            Monitor monitor = new Monitor(sourcePath, destinationPath, Convert.ToInt32(timeInterval));
+                        }
+                        else
+                        {
+                            LogFile.LogWriter($" Error: Wrong XML files  {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)}{Environment.NewLine}");
+                        }
+                    }
+                }
+                else
+                {
+                    LogFile.LogWriter($" Error: Wrong XML files  {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)}{Environment.NewLine}");
+                }
