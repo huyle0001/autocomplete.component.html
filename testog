@@ -1,0 +1,53 @@
+using System;
+using System.IO;
+
+namespace ECMFileWatcher.Utils
+{
+    static public class LogFile
+    {
+        public static void LogWriter(string pLogMessage)
+        {
+            StreamWriter textWriter;
+
+            try
+            {
+                string logFilePath  = LogPath();
+                string logFile      = $"{logFilePath}Logs\\{DateTime.Today.ToString("yyyyMMdd")}.log";
+
+                if (!File.Exists(logFile))
+                {
+                    File.Create(logFile).Close();
+                    textWriter = new StreamWriter(logFile);
+                }
+                else
+                    textWriter = new StreamWriter(logFile, true);
+
+                using (textWriter)
+                {
+                    textWriter.WriteLine(pLogMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                //throw;
+            }
+        }
+        public static string LogPath()
+        {
+            string currentApplicationPath = AppDomain.CurrentDomain.BaseDirectory;
+
+            if (currentApplicationPath.IndexOf("Debug") > 0)
+            {
+                currentApplicationPath = currentApplicationPath.Replace(@"bin\x64\Debug", "");  //case 1
+                currentApplicationPath = currentApplicationPath.Replace(@"bin\Debug", "");       //case 2
+                currentApplicationPath = currentApplicationPath.Replace(@"bin\x64\Release", "");  //case 3
+                currentApplicationPath = currentApplicationPath.Replace(@"bin\Release", "");     //case 4
+            }
+            else
+                currentApplicationPath += @"\";
+
+
+            return currentApplicationPath;
+        }
+    }
+}
