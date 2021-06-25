@@ -1,0 +1,24 @@
+Sub ImportMacrosToCommonProject()
+    Dim Count As Integer
+    Dim FileSpec As String
+  
+    'Replace with your share location
+    FileSpec = "\\share\SharedCode.bas"
+ 
+    If VBA.Len(VBA.Dir(FileSpec)) > 0 Then
+        'If the module is already in the Common Project, remove the existing module
+        Count = ThisFrame.VBCommonProject.VBComponents.Count
+        For I = 1 To Count
+            If ThisFrame.VBCommonProject.VBComponents.Item(I).Name Like "SharedCode" Then
+                ThisFrame.VBCommonProject.VBComponents.Remove ThisFrame.VBCommonProject.VBComponents.Item(I)
+            End If
+        Next I
+    
+        'Import the new module and rename it so it matches the name referenced by other macros
+        ThisFrame.VBCommonProject.VBComponents.import FileSpec
+        Count = ThisFrame.VBCommonProject.VBComponents.Count
+        ThisFrame.VBCommonProject.VBComponents.Item(Count).Name = "SharedCode"
+  
+    Else
+        Debug.Print FileSpec + " does not exist."
+    End If
